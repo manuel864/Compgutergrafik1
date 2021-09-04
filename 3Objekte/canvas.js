@@ -92,21 +92,21 @@ function createPaintingBuffer(gl){
 	[ // X, Y, Z           S, T
 		// Top
 		-0.6, 1.0, -0.1,   0, 0,
-		-0.6, 1.0, 0.1,    0, 1,
-		0.6, 1.0, 0.1,     1, 1,
-		0.6, 1.0, -0.1,    1, 0,
+		-0.6, 1.0, 0.1,    0, 0,
+		0.6, 1.0, 0.1,     0, 0,
+		0.6, 1.0, -0.1,    0, 0,
 
 		// Left
 		-0.6, 1.0, 0.1,    0, 0,
-		-0.6, -1.0, 0.1,   1, 0,
-		-0.6, -1.0, -0.1,  1, 1,
-		-0.6, 1.0, -0.1,   0, 1,
+		-0.6, -1.0, 0.1,   0, 0,
+		-0.6, -1.0, -0.1,  0, 0,
+		-0.6, 1.0, -0.1,   0, 0,
 
 		// Right
-		0.6, 1.0, 0.1,     1, 1,
-		0.6, -1.0, 0.1,    0, 1,
+		0.6, 1.0, 0.1,     0, 0,
+		0.6, -1.0, 0.1,    0, 0,
 		0.6, -1.0, -0.1,   0, 0,
-		0.6, 1.0, -0.1,    1, 0,
+		0.6, 1.0, -0.1,    0, 0,
 
 		// Front
 		0.6, 1.0, 0.1,     1, 1,
@@ -116,15 +116,15 @@ function createPaintingBuffer(gl){
 
 		// Back
 		0.6, 1.0, -0.1,    0, 0,
-		0.6, -1.0, -0.1,   0, 1,
-		-0.6, -1.0, -0.1,  1, 1,
-		-0.6, 1.0, -0.1,   1, 0,
+		0.6, -1.0, -0.1,   0, 0,
+		-0.6, -1.0, -0.1,  0, 0,
+		-0.6, 1.0, -0.1,   0, 0,
 
 		// Bottom
-		-0.6, -1.0, -0.1,   1, 1,
-		-0.6, -1.0, 0.1,    1, 0,
+		-0.6, -1.0, -0.1,   0, 0,
+		-0.6, -1.0, 0.1,    0, 0,
 		0.6, -1.0, 0.1,     0, 0,
-		0.6, -1.0, -0.1,    0, 1
+		0.6, -1.0, -0.1,    0, 0
 	];
 
 	var paintingIndices =
@@ -162,13 +162,14 @@ function createPaintingBuffer(gl){
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, box.paintingIndexBufferObject);
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(paintingIndices), gl.STATIC_DRAW);
 
+    //Create Texture
     box.boxtexture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, box.boxtexture);
+    gl.bindTexture(gl.TEXTURE_2D, box.boxtexture);
+    gl.activeTexture(gl.TEXTURE0);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById("crate-png"));
     gl.bindTexture(gl.TEXTURE_2D, null);
-
 
     //Draw Object
     box.drawObject = function(gl, program) {
@@ -199,10 +200,8 @@ function createPaintingBuffer(gl){
     gl.enableVertexAttribArray(positionAtrributeLocation);
     gl.enableVertexAttribArray(texAttributeLocation);
 
- 
-    gl.bindTexture(gl.TEXTURE_2D, box.boxtexture);
-    var samplerUniformLocation = gl.getUniformLocation(program, 'sPic');
-    gl.uniform1i(samplerUniformLocation, 11);
+            gl.bindTexture(gl.TEXTURE_2D, box.boxtexture);
+        gl.activeTexture(gl.TEXTURE0);
 
 	gl.drawElements(gl.TRIANGLES, paintingIndices.length, gl.UNSIGNED_SHORT, 0);
 
@@ -256,6 +255,7 @@ function createPaintingBuffer(gl){
     
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
+
         box.drawObject(gl, program);
         requestAnimationFrame(loop);
     };
