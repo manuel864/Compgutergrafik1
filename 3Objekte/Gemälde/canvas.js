@@ -1,34 +1,3 @@
-var vertexShaderText =
-[
-    "precision mediump float;",
-    "",
-    "attribute vec3 vertPosition;",
-    "attribute vec2 vertTexCoord;",
-    "varying vec2 fragTexCoord;",
-    "uniform mat4 mWorld;",
-    "uniform mat4 mView;",
-    "uniform mat4 mProj;",
-    "",
-    "void main()",
-    "{",
-    "fragTexCoord = vertTexCoord;",
-    "gl_Position =  mProj * mView * mWorld * vec4(vertPosition, 1.0);",
-    "}"
-].join("\n");
-
-
-var fragmentShaderText =
-[   
-    "precision mediump float;",
-    "",
-    "varying vec2 fragTexCoord;",
-    "uniform sampler2D sPic;",
-    "void main()",
-    "{",
-    "gl_FragColor = texture2D(sPic, fragTexCoord);",
-    "}"
-].join("\n");
-
 //Context
 function getGlContext(canvas){
 
@@ -47,18 +16,22 @@ function getGlContext(canvas){
 }
 
 //Shader
-function createShaderProgram(gl, vertexText, fragmentText){
+async function createShaderProgram(gl, vertexText, fragmentText){
 
+    var vertexShaderResponse = await fetch(vertexText);
+	var vertexShaderText = await vertexShaderResponse.text();
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vertexShader, vertexText);
+    gl.shaderSource(vertexShader, vertexShaderText);
     gl.compileShader(vertexShader);
     if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)){
         console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(vertexShader));
         return;
     }
 
+    var fragmentShaderResponse = await fetch(fragmentText);
+	var fragmentShaderText = await fragmentShaderResponse.text();
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fragmentShader, fragmentText);
+    gl.shaderSource(fragmentShader, fragmentShaderText);
     gl.compileShader(fragmentShader);
     if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)){
         console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(fragmentShader));
@@ -214,10 +187,10 @@ function createPaintingBuffer(gl){
     return box;
 }
 
-
+async function init(){
     var canvas = document.getElementById("gl-canvas");
     var gl = getGlContext(canvas);
-    var program = createShaderProgram(gl, vertexShaderText, fragmentShaderText);
+    var program = await createShaderProgram(gl, "canvas_vert.glsl", "canvas_frag.glsl");
     var box = createPaintingBuffer(gl);
 
     gl.useProgram(program);
@@ -259,5 +232,7 @@ function createPaintingBuffer(gl){
         box.drawObject(gl, program);
         requestAnimationFrame(loop);
     };
+    requestAnimationFrame(loop);
+}
 
-requestAnimationFrame(loop);
+window.onload = init;
