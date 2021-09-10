@@ -25,7 +25,7 @@ function getScaleMatrixZ(angle){
 }
 
 //v als vec3
-function getTranslateMatrix(v){
+function getScaleMatrix(v){
     let translateMatrix = new Float32Array( [
         v[0],0,0,0,
         0,v[1],0,0,
@@ -179,8 +179,12 @@ function dot(a,b){
     return dotProduct;
 }
 
-function multiplication(out,b){
+function multiplication4(a,b){
+    let out = new Float32Array(16);
+	for (let i=0; i<4;i++){
+		for (let j = 0; j < 15; j += 4) {
+			out[j+i] = dot([a[0+i],a[4+i],a[8+i],a[12+i]],[b[j],b[j+1],b[j+2],b[j+3]])
 
-}
-
-console.log(dot([1,3,4],[2,4,1]));
+		}
+	}
+    return out;}
