@@ -1,34 +1,4 @@
-var vertexShaderText =
-[
-    "precision mediump float;",
-    "",
-    "attribute vec3 vertPosition;",
-    "attribute vec2 vertTexCoord;",
-    "varying vec2 fragTexCoord;",
-    "uniform mat4 mWorld;",
-    "uniform mat4 mView;",
-    "uniform mat4 mProj;",
-    "",
-    "void main()",
-    "{",
-    "fragTexCoord = vertTexCoord;",
-    "gl_Position =  mProj * mView * mWorld * vec4(vertPosition, 1.0);",
-    "}"
-].join("\n");
-
-
-var fragmentShaderText =
-[   
-    "precision mediump float;",
-    "",
-    "varying vec2 fragTexCoord;",
-    "uniform sampler2D sPic;",
-    "void main()",
-    "{",
-    "gl_FragColor = texture2D(sPic, fragTexCoord);",
-    "}"
-].join("\n");
-
+//context
 function getGlContext(canvas) {
     let gl = canvas.getContext("webgl");
 
@@ -44,23 +14,28 @@ function getGlContext(canvas) {
 	return gl;
 }
 
-function createShaderProgram(gl, vertexText, fragmentText) {
+//create Shader
+async function createShaderProgram(gl, vertexText, fragmentText){
+    var vertexShaderResponse = await fetch(vertexText);
+	var vertexShaderText = await vertexShaderResponse.text();
+    var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vertexShader, vertexShaderText);
+    gl.compileShader(vertexShader);
+    if(!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)){
+        console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(vertexShader));
+        return;
+    }
 
-	let vertexShader = gl.createShader(gl.VERTEX_SHADER);
-	gl.shaderSource(vertexShader, vertexText);
-	gl.compileShader(vertexShader);
-	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling vertex shader!', gl.getShaderInfoLog(vertexShader));
-		return;
-	}
+    var fragmentShaderResponse = await fetch(fragmentText);
+	var fragmentShaderText = await fragmentShaderResponse.text();
+    var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fragmentShader, fragmentShaderText);
+    gl.compileShader(fragmentShader);
+    if(!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)){
+        console.error("ERROR compiling vertex shader!", gl.getShaderInfoLog(fragmentShader));
+        return;
+    }
 
-	let fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
-	gl.shaderSource(fragmentShader, fragmentText);
-	gl.compileShader(fragmentShader);
-	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-		console.error('ERROR compiling fragment shader!', gl.getShaderInfoLog(fragmentShader));
-		return;
-	}
 
 	let program = gl.createProgram();
 	gl.attachShader(program, vertexShader);
@@ -76,13 +51,14 @@ function createShaderProgram(gl, vertexText, fragmentText) {
 		console.error('ERROR validating program!', gl.getProgramInfoLog(program));
 		return;
 	}
-
 	return program;
 }
 
-function createBoxBuffer(gl){
 
-    var boxVertices = 
+//create spear head Buffer
+function createSpeerHeadBuffer(gl){
+
+    var headVertices = 
 	[ // X, Y, Z           R, G, B
 		// Top
 		-3.4, 0.4, -0.0,   1.0, 1.0, 1.0,
@@ -121,7 +97,7 @@ function createBoxBuffer(gl){
 		3.4, 0.0, 0.0,    0.8, 0.8, 0.8,
 	];
 
-	var boxIndices =
+	var headIndices =
 	[
 		// Top
 		0, 1, 2,
@@ -148,31 +124,23 @@ function createBoxBuffer(gl){
 		22, 20, 23
 	];
 
-    var boxVertexBufferObject = gl.createBuffer();
+    var headVertexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, boxVertexBufferObject );
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(headVertices), gl.STATIC_DRAW);
 
-    var boxIndexBufferObject = gl.createBuffer();
+    var headIndexBufferObject = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
-
-	var texture = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	// use this texture until video available
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById("video-texture"));
-	gl.bindTexture(gl.TEXTURE_2D, null);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(headIndices), gl.STATIC_DRAW);
 
     return{
-        vbo: boxVertexBufferObject,
-        ibo: boxIndexBufferObject,
-        length: boxIndices.length
+        vbo: headVertexBufferObject,
+        ibo: headIndexBufferObject,
+        length: headIndices.length
     };
 }
 
 
+//Grip drawable
 async function createGripDrawable(gl){
     var drawable = {};
 
@@ -181,19 +149,12 @@ async function createGripDrawable(gl){
     gl.bindBuffer(gl.ARRAY_BUFFER, drawable.vbo);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-	drawable.texture = gl.createTexture();
-	gl.activeTexture(gl.TEXTURE0);
-	gl.bindTexture(gl.TEXTURE_2D, drawable.texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById("video-texture"));
-	gl.bindTexture(gl.TEXTURE_2D, null);
 
     drawable.draw = (gl, program) => {
         gl.useProgram(program);
 
         let positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
-		let texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
+		let colorAtrributeLocation = gl.getAttribLocation(program, 'vertColor');
 		gl.bindBuffer(gl.ARRAY_BUFFER, drawable.vbo);
 		gl.vertexAttribPointer(
 			positionAttribLocation, // Attribute location
@@ -204,7 +165,7 @@ async function createGripDrawable(gl){
 			0 // Offset from the beginning of a single vertex to this attribute
 		);
 		gl.vertexAttribPointer(
-			texCoordAttribLocation, // Attribute location
+			colorAtrributeLocation, // Attribute location
 			2, // Number of elements per attribute
 			gl.FLOAT, // Type of elements
 			gl.FALSE,
@@ -213,25 +174,19 @@ async function createGripDrawable(gl){
 		);
 		
         gl.enableVertexAttribArray(positionAttribLocation);
-        gl.enableVertexAttribArray(texCoordAttribLocation);
-
-		gl.bindTexture(gl.TEXTURE_2D, drawable.texture);
-		gl.activeTexture(gl.TEXTURE0);
-
-		const samplerUniformLocation = gl.getUniformLocation(program, 'sampler');
-		gl.uniform1i(samplerUniformLocation, 0);
+        gl.enableVertexAttribArray(colorAtrributeLocation);
 
         gl.drawArrays(gl.TRIANGLES, 0, vertices.length/8);
     }
-
     return drawable;
 }
 
-//Draw Object
+
+//Draw spear head
 function drawObject(gl, program, buffers){
 
     var positionAtrributeLocation = gl.getAttribLocation(program, "vertPosition");
-    var colorAtrributeLocation = gl.getAttribLocation(program, "vertTexCoord");
+    var colorAtrributeLocation = gl.getAttribLocation(program, "vertColor");
     gl.bindBuffer(gl.ARRAY_BUFFER, buffers.vbo);
     gl.vertexAttribPointer(
         positionAtrributeLocation, // location
@@ -259,10 +214,11 @@ function drawObject(gl, program, buffers){
 }
 
 
+//init
 async function init() {
     var canvas = document.getElementById("gl-canvas");
     var gl = getGlContext(canvas);
-    var program = createShaderProgram(gl, vertexShaderText, fragmentShaderText);
+    var program = await createShaderProgram(gl, "speer_vert.glsl", "speer_frag.glsl");
     gl.useProgram(program);
 
     var paintingBuffer = createBoxBuffer(gl);
