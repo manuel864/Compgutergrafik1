@@ -11,17 +11,43 @@ function getTranslateMatrix(v){
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Matrix_math_for_the_web
 //Rotiert um die Z Achse
-function getRotateMatrix(angle){
+function getRotateXMatrix(angle){
     let radian = Math.PI*angle / 180;
-    let cosB = Math.cos( radian);
-    let sinB = Math.sin(radian);
-    let scaleMatrix = new Float32Array( [
-        cosB,sinB,0,0,
-        -sinB,cosB,0,0,
+    let c = Math.cos( radian);
+    let s = Math.sin(radian);
+    let rotateMatrix = new Float32Array( [
+        c,s,0,0,
+        -s,c,0,0,
         0,0,1,0,
         0,0,0,1,
     ]);
-    return scaleMatrix;
+    return rotateMatrix;
+}
+
+function getRotateXMatrix(angle){
+    let radian = Math.PI*angle / 180;
+    let c = Math.cos( radian);
+    let s = Math.sin(radian);
+    let rotateMatrix = new Float32Array( [
+        1,0,0,0,
+        0,c,-s,0,
+        0,s,c,0,
+        0,0,0,1,
+    ]);
+    return rotateMatrix;
+}
+
+function getRotateYMatrix(angle){
+    let radian = Math.PI*angle / 180;
+    let c = Math.cos( radian);
+    let s = Math.sin(radian);
+    let rotateMatrix = new Float32Array( [
+        c,0,s,0,
+        0,1,0,0,
+        -s,0,c,0,
+        0,0,0,1,
+    ]);
+    return rotateMatrix;
 }
 
 //v als vec3
