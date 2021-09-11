@@ -11,14 +11,14 @@ function getVertexBufferFromIndices(vertsArray, indices){
 function createSkyBox() {
 	var skyboxVertices =
 	[
-		-1.0,  1.0, -1.0,  // 0
-		-1.0,  1.0,  1.0,  // 1
-		 1.0,  1.0,  1.0,  // 2
-		 1.0,  1.0, -1.0,  // 3
-		-1.0, -1.0, -1.0,  // 4
-		-1.0, -1.0,  1.0,  // 5
-		 1.0, -1.0,  1.0,  // 6
-		 1.0, -1.0, -1.0,  // 7
+		[-1.0,  1.0, -1.0],  // 0
+		[-1.0,  1.0,  1.0],  // 1
+		[ 1.0,  1.0,  1.0],  // 2
+		[ 1.0,  1.0, -1.0],  // 3
+		[-1.0, -1.0, -1.0],  // 4
+		[-1.0, -1.0,  1.0],  // 5
+		[ 1.0, -1.0,  1.0],  // 6
+		[ 1.0, -1.0, -1.0]  // 7
 	];
 
 	var skyboxIndices =
@@ -268,7 +268,7 @@ class Skybox{
         );
         gl.enableVertexAttribArray(positionAttribLocation);
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
-		gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/3);
+		gl.drawArrays(gl.TRIANGLES, 0, this.verts.length*200);
 		gl.disableVertexAttribArray(positionAttribLocation);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
@@ -514,7 +514,9 @@ async function init(){
     monkey.material= new Material([0.2, 0.4, 0.65, 1.0], 30.0, 1.0, [0.05,0.05,0.2]);
     monkey2.material= new Material([0.2, 0.4, 0.65, 1.0], 30.0, 1.0, [0.05,0.05,0.2]);
     scene.addObject(monkey);
+    
     scene.addObject(bild);
+    console.log(scene.objects)
 
 
     //                                Pos               Color         Spec Color       
@@ -566,6 +568,7 @@ async function init(){
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
         for(var obj of scene.objects){
+
             gl.useProgram(obj.program)
             var matWorldUniformLocation = gl.getUniformLocation(obj.program, 'mWorld');
             var matViewUniformLocation = gl.getUniformLocation(obj.program, 'mView');
