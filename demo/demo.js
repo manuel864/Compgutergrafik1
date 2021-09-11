@@ -8,18 +8,20 @@ async function init(){
     scene.addObject(skybox);
     let data = await fetchModel('objects/monkey.obj');
     let dataBild = getPaintVerts();
-    //                      Buffer       n      program
+    let globusData = await fetchModel('objects/earth.obj');
+    let globus = new Object(gl, globusData,'shaders/planet_vert.glsl','shaders/planet_frag.glsl',true,['jupiter-png','grain-png']);
     let monkey = new Object(gl,data,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',false);
     await monkey.createProgram(gl);
-    let monkey2 = new Object(gl,data,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',false);
-    await monkey2.createProgram(gl);
     let bild = new Object(gl,dataBild,'shaders/canvas_vert.glsl','shaders/canvas_frag.glsl',true,['mona-png']);
     await bild.createProgram(gl);
+    //await globus.createProgram(gl);
+    monkey.translate = getTranslateMatrix([0,1,0])
+    monkey.rotateX = getRotateXMatrix(45);
+    monkey.scale = getScaleMatrix([1.1,1.4,1.1]);
     //                                BaseColor        shini   spec      ambient
     monkey.material= new Material([0.2, 0.4, 0.65, 1.0], 30.0, 1.0, [0.05,0.05,0.2]);
-    monkey2.material= new Material([0.2, 0.4, 0.65, 1.0], 30.0, 1.0, [0.05,0.05,0.2]);
     scene.addObject(monkey);
-    
+    //scene.addObject(globus)
     scene.addObject(bild);
     console.log(scene.objects)
 

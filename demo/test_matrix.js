@@ -11,7 +11,7 @@ function getTranslateMatrix(v){
 
 //https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Matrix_math_for_the_web
 //Rotiert um die Z Achse
-function getRotateXMatrix(angle){
+function getRotateZMatrix(angle){
     let radian = Math.PI*angle / 180;
     let c = Math.cos( radian);
     let s = Math.sin(radian);

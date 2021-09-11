@@ -166,6 +166,12 @@ class Object{
         this.textures = [];
         this.textureLoc = textureLoc;
         if(this.isTextured){this.createTextures();}
+        this.translate = getTranslateMatrix([0,0,0]);
+        this.scale = getScaleMatrix([1,1,1]);
+        this.rotateX = getRotateXMatrix(0);
+        this.rotateY = getRotateYMatrix(0);
+        this.rotateZ = getRotateZMatrix(0);
+        
 
     }
     async createProgram(gl){
@@ -217,13 +223,17 @@ class Object{
 
     createTextures(){
         let gl = getGlContext();
-        for(let loc of this.textureLoc){
+        let activeTextureArray = [gl.TEXTURE0,gl.TEXTURE1,gl.TEXTURE2,gl.TEXTURE3,gl.TEXTURE4];
+        for(let i=0;i<this.textureLoc.length;i++){
+            console.log(this.textureLoc[i])
             let texture = gl.createTexture();
+            console.log(texture)
             gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.activeTexture(gl.TEXTURE0);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+            gl.activeTexture(activeTextureArray[i]);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById(loc));
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById(this.textureLoc[i]));
+            gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
             this.textures.push(texture);
         }
@@ -257,12 +267,25 @@ class Object{
                 5 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
             );
 
+            
+
             gl.enableVertexAttribArray(positionAttribLocation);
             gl.enableVertexAttribArray(normalAttribLocation);
             gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/12);
             gl.disableVertexAttribArray(positionAttribLocation);
             gl.disableVertexAttribArray(normalAttribLocation);
             gl.bindBuffer(gl.ARRAY_BUFFER, null);
+            var translateLocation = gl.getUniformLocation(this.program, 'translate');
+            gl.uniformMatrix4fv(translateLocation,gl.FALSE,this.translate );
+            var scaleLocation = gl.getUniformLocation(this.program, 'scale');
+            gl.uniformMatrix4fv(scaleLocation,gl.FALSE,this.scale );
+            var rotateXLocation = gl.getUniformLocation(this.program, 'rotateX');
+            gl.uniformMatrix4fv(rotateXLocation,gl.FALSE,this.rotateX );
+            var rotateYLocation = gl.getUniformLocation(this.program, 'rotateY');
+            gl.uniformMatrix4fv(rotateYLocation,gl.FALSE,this.rotateY );
+            var rotateZLocation = gl.getUniformLocation(this.program, 'rotateZ');
+            gl.uniformMatrix4fv(rotateZLocation,gl.FALSE,this.rotateZ );
+
         }
         else{
             
@@ -291,12 +314,13 @@ class Object{
             gl.enableVertexAttribArray(texAttributeLocation);
 
             //bind texture loop
-            
-            for(let texture of this.textures){
-                gl.activeTexture(gl.TEXTURE0);
-                gl.bindTexture(gl.TEXTURE_2D, texture);
-                const samplerUniformLocation = gl.getUniformLocation(this.program, 'sPic');
-                gl.uniform1i(samplerUniformLocation, 0);
+            let activeTextureArray = [gl.TEXTURE0,gl.TEXTURE1,gl.TEXTURE2,gl.TEXTURE3,gl.TEXTURE4];
+            for(let i=0;i < this.textures.lenght;i++){
+                gl.activeTexture(activeTextureArray[i]);
+                gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
+                
+                //const samplerUniformLocation = gl.getUniformLocation(this.program, 'sPic');
+                //gl.uniform1i(samplerUniformLocation, 0);
             } 
             gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/12);
             gl.disableVertexAttribArray(positionAtrributeLocation);
