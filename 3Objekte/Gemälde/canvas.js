@@ -195,10 +195,24 @@ async function init(){
 
     gl.useProgram(program);
 
-    gl.clearColor(0.75, 0.8, 0.8, 1.0);
+    const fogColor = [0.85, 0.85, 0.85];
+    gl.clearColor(fogColor[0], fogColor[1], fogColor[2], 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); 
     gl.enable(gl.DEPTH_TEST);
 
+    const settings = {
+        fogNear: 6,
+        fogFar: 10
+    };
+
+    const fogColorUniformLocation = gl.getUniformLocation(program, 'fogColor');
+    gl.uniform3fv(fogColorUniformLocation, fogColor);
+
+    const fogNearUniformLocation = gl.getUniformLocation(program, "fogNear");
+    gl.uniform1f(fogNearUniformLocation, settings.fogNear);
+
+    const fogFarUniformLocation = gl.getUniformLocation(program, "fogFar");
+    gl.uniform1f(fogFarUniformLocation, settings.fogFar);
 
     var matWorldUniformLocation = gl.getUniformLocation(program, "mWorld");
     var matViewUniformLocation = gl.getUniformLocation(program, "mView");
