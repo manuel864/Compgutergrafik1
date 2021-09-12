@@ -171,7 +171,6 @@ class Object{
         this.rotateY = getRotateYMatrix(0);
         this.rotateZ = getRotateZMatrix(0);
         this.textureSampleLoc = [];
-        this.multipleTexture = false;
         this.isAnimated = isAnimated;
         this.isReflectiv = isReflectiv;
         if(this.isTextured && !this.isReflectiv){this.createTextures();}
@@ -306,6 +305,15 @@ class Object{
                     const samplerUniformLocation = gl.getUniformLocation(this.program, 'sPic');
                     gl.uniform1i(samplerUniformLocation, 0);
                 }
+            }
+            if(this.isAnimated){
+
+                gl.activeTexture(gl.TEXTURE0);
+
+
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById(this.textureLoc[0]));
+                const samplerUniformLocation = gl.getUniformLocation(this.program, 'sPic');
+                gl.uniform1i(samplerUniformLocation, 0);
             } 
             
         }

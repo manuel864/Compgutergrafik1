@@ -19,6 +19,7 @@ uniform mat4 mProj;
 
 void main()
 {
+    fragNormal = vertNormal;
     fragTexCoord = vertTexCoord;
     gl_Position = mProj * mView * mWorld * translate * scale * rotateZ * rotateY * rotateX *vec4(vertPosition, 1.0);
 }

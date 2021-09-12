@@ -11,7 +11,8 @@ async function init(){
     await skybox.createProgram(); 
     
     let monkeyData = await fetchModel('objects/monkey.obj');
-    let monkey = new Object("1",gl,monkeyData,false,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',false);
+    //                    Name| gl | vertsData | isreflect |                               shader programme                 | isTextured  |  textureLocs als Array 
+    let monkey = new Object("1", gl ,monkeyData, false    ,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',false);
     await monkey.createProgram(gl);
     monkey.material = baseMaterial;
     
@@ -33,7 +34,7 @@ async function init(){
     globus.material = baseMaterial;
 
     let tvData = getTV();
-    let tv = new Object("tv",gl,tvData,false,'shaders/tv_vert.glsl','shaders/tv_frag.glsl',true,['video-texture']);
+    let tv = new Object("tv",gl,tvData,false,'shaders/tv_vert.glsl','shaders/tv_frag.glsl',true,['video-texture'],true);
     await tv.createProgram(gl);
     tv.material = baseMaterial;
     
@@ -46,14 +47,18 @@ async function init(){
     scene.addObject(bild);
     scene.addObject(monkey2)
     scene.addObject(globus);
-    //scene.addObject(tv);
+    scene.addObject(tv);
     
 
 
-    monkey.translate = getTranslateMatrix([0,1,0])
+    monkey.translate = getTranslateMatrix([0,-4,0])
     monkey.rotateX = getRotateXMatrix(45);
-    monkey.scale = getScaleMatrix([1.1,1.4,1.1]);
-    
+    //monkey.scale = getScaleMatrix([1.1,1.4,1.1]);
+
+
+    monkey2.translate = getTranslateMatrix([2,0,0])
+    globus.translate = getTranslateMatrix([0,2,0])
+    tv.translate = getTranslateMatrix([2,0,0]);
 
 
     //                                Pos               Color         Spec Color       
