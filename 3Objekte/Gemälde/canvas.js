@@ -201,7 +201,7 @@ async function init(){
     gl.enable(gl.DEPTH_TEST);
 
     const settings = {
-        fogNear: 6,
+        fogNear: 4,
         fogFar: 10
     };
 
@@ -218,31 +218,38 @@ async function init(){
     var matViewUniformLocation = gl.getUniformLocation(program, "mView");
     var matProjUniformLocation = gl.getUniformLocation(program, "mProj");
 
-    var worldMatrix = new Float32Array(16);
-    var viewMatrix = new Float32Array(16);
-    var projMatrix = new Float32Array(16);
-    glMatrix.mat4.identity(worldMatrix);
-    glMatrix.mat4.lookAt(viewMatrix, [0, 0, 8], [0, 0, 0], [0, 1, 0]);
-    glMatrix.mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width/canvas.height, 0.1, 1000.0);
+    var worldMatrix = getEinheitsMatrix4();
+    var viewMatrix = getEinheitsMatrix4();
+    var projMatrix = getEinheitsMatrix4();
+    
 
-    gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
-    gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
-    gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
+    projMatrix= perspective(projMatrix,45,canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0);
 
-    box.drawObject(gl, program);
+
+	gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
 
     //render loop
-    var identityMatrix = new Float32Array(16);
-    glMatrix.mat4.identity(identityMatrix);
-    var angle = 0;
+    var angle = 360;
     var loop = function(){
-        angle = performance.now() / 1000 / 6 *2 * Math.PI;
-        glMatrix.mat4.rotate(worldMatrix, identityMatrix, angle, [0, 1, 0]);
-        gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
+        angle = performance.now() / 1000 / 6 * 360;
     
+        const cameraTransX = document.querySelector('#cameraTransX').value;
+        document.querySelector('#cameraTransXValue').innerHTML = cameraTransX;
+        const cameraTransY = document.querySelector('#cameraTransY').value;
+        document.querySelector('#cameraTransYValue').innerHTML = cameraTransY;
+        const cameraTransZ = document.querySelector('#cameraTransZ').value;
+        document.querySelector('#cameraTransZValue').innerHTML = cameraTransZ;
+
         gl.clearColor(0.75, 0.85, 0.8, 1.0);
         gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT);
 
+        viewMatrix = look(viewMatrix, [cameraTransX, cameraTransY, cameraTransZ], [0, 0, 0], [0, 1, 0]);
+        gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
+
+
+        worldMatrix = getEinheitsMatrix4();
+        worldMatrix = rotate(worldMatrix, angle, [0, 1, 0]);
+        gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, worldMatrix);
         box.drawObject(gl, program);
         requestAnimationFrame(loop);
     };
