@@ -22,6 +22,11 @@ varying vec3 fPosition;
 
 //varying vec3 v_surfaceToPointLight [numberOfLights];
 
+varying float fogDepth;
+uniform vec4 fogColor;
+uniform float fogNear;
+uniform float fogFar;
+
 
 uniform vec3 eyePosition;
 
@@ -62,9 +67,9 @@ void main(){
     finalLightColor += mat.color.rgb*(light * pointLight2.lightColor);
     finalSpecColor +=  mat.spec*lightStrenght * pointLight2.specColor;
 
+    float fogAmount = smoothstep(fogNear, fogFar, fogDepth);
 
 
-
-    gl_FragColor = vec4(finalLightColor,mat.color.a);
+    gl_FragColor = mix(vec4(finalLightColor,mat.color.a), fogColor, fogAmount);
     gl_FragColor.rgb += finalSpecColor;
 }

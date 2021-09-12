@@ -25,5 +25,4 @@ void main()
     vec4 vPos = mView * mWorld * vec4(vertPosition, 1.0);
     fogDepth = length(vPos.xyz);
     gl_Position = mProj * mView * mWorld * translate * scale * rotateZ * rotateY * rotateX *vec4(vertPosition, 1.0);
-    gl_Position = mProj * vPos;
 }

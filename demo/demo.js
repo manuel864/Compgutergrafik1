@@ -4,8 +4,9 @@ async function init(){
 
      //                                BaseColor        shini    spec      ambient
     let baseMaterial= new Material([0.2, 0.4, 0.65, 1.0], 30.0,  1.0,  [0.05,0.05,0.2]);
-    //                        fc               FN  FF
-    let baseFog = new Fog([0.85, 0.85, 0.85], 1, 8);
+
+    //                            FC           FN  FF
+    let baseFog = new Fog([0.85, 0.85, 0.85], 1.0, 10.0);
 
 
     let skyboxGeo = createSkyBox();
@@ -18,11 +19,13 @@ async function init(){
     let monkey = new Object("1", gl ,monkeyData, false    ,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',false);
     await monkey.createProgram(gl);
     monkey.material = baseMaterial;
+    monkey.fog = baseFog;
     
 
     let monkey2 = new Object("2",gl,monkeyData,true,'shaders/reflection_vert.glsl','shaders/reflection_frag.glsl',true,[skybox.texture]);
     await monkey2.createProgram(gl);
     monkey2.material = baseMaterial;
+    monkey2.fog = baseFog;
 
     let dataBild = getPaintVerts();
     let bild = new Object("bild",gl,dataBild,false,'shaders/canvas_vert.glsl','shaders/canvas_frag.glsl',true,['mona-png'],false, true);
@@ -36,11 +39,13 @@ async function init(){
     globus.textureSampleLoc = ['sJupiter','sGrain']
     globus.multipleTexture = true;
     globus.material = baseMaterial;
+    globus.fog = baseFog;
 
     let tvData = getTV();
     let tv = new Object("tv",gl,tvData,false,'shaders/tv_vert.glsl','shaders/tv_frag.glsl',true,['video-texture'],true);
     await tv.createProgram(gl);
     tv.material = baseMaterial;
+    tv.fog = baseFog;
     
     
     
@@ -103,18 +108,14 @@ async function init(){
             var viewWorldPositionLocation = gl.getUniformLocation(obj.program, "eyePosition");
             gl.uniform3fv(viewWorldPositionLocation, [0, 0, 8]);
         
-            if(obj.isFog == true){
-                gl.clearColor(obj.fog.fogColor[0], obj.fog.fogColor[1], obj.fog.fogColor[2], 1.0);
+            //Nebel
+            const fogColorUniformLocation = gl.getUniformLocation(obj.program, 'fogColor');
+            gl.uniform3fv(fogColorUniformLocation, obj.fog.fogColor);
+            const fogNearUniformLocation = gl.getUniformLocation(obj.program, 'fogNear');
+            gl.uniform1f(fogNearUniformLocation, obj.fog.fogNear);
+            const fogFarUniformLocation = gl.getUniformLocation(obj.program, 'fogFar');
+            gl.uniform1f(fogFarUniformLocation, obj.fog.fogFar);
 
-                const fogColorUniformLocation = gl.getUniformLocation(obj.program, 'fogColor');
-                gl.uniform3fv(fogColorUniformLocation, [0.85, 0.85, 0.85]);
-            
-                const fogNearUniformLocation = gl.getUniformLocation(obj.program, "fogNear");
-                gl.uniform1f(fogNearUniformLocation, 4);
-            
-                const fogFarUniformLocation = gl.getUniformLocation(obj.program, "fogFar");
-                gl.uniform1f(fogFarUniformLocation, 18);
-            }
 
 
             if(obj.isReflectiv){

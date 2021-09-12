@@ -34,7 +34,7 @@ class Fog{
     constructor(fogColor, fogNear, fogFar){
     this.fogColor = fogColor; //vec3
     this.fogNear = fogNear; //float
-    this.forFar = fogFar; //float
+    this.fogFar = fogFar; //float
     }
 }
 
