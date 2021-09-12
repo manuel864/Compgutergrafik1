@@ -260,3 +260,15 @@ function multiplication4(a,b){
         out[15] = (a[8] * b03 - a[9] * b01 + a[10] * b00) * det;
         return out;
     }
+
+function addMatrix(a,b){
+    //console.log(b)
+    /*if(a.length != b.length){
+        return;
+    }*/
+    let out = new Float32Array(a.length);
+    for (let i=0;i<a.length;i++){
+        out[i] = a[i] + b[i];
+    }
+    return out;
+}

@@ -1,8 +1,5 @@
 precision mediump float;
 
-
-
-
 struct Light {
     vec3 position;
     vec3 lightColor;

@@ -3,6 +3,7 @@ precision mediump float;
 uniform mat4 mWorld;
 uniform mat4 mView;
 uniform mat4 mProj;
+
 attribute vec3 vertPosition;
 varying vec3 fTexCoord;
 

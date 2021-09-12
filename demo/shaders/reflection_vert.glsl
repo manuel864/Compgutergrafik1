@@ -11,6 +11,7 @@ uniform mat4 rotateX;
 uniform mat4 rotateY;
 uniform mat4 rotateZ;
 
+uniform vec3 eyePosition;
 
 attribute vec3 vertPosition;
 attribute vec3 vertNormal;
@@ -20,15 +21,13 @@ varying vec3 fPosition;
 varying vec3 fragNormal;
 varying vec2 fTexCoord;
 
-void main()
-{
-
-    fTexCoord = vertTexCoord;
+void main(){
     fragNormal =  (mWorld *vec4(vertNormal,0.0)).xyz;
+    fTexCoord = vertTexCoord;
     gl_Position = mProj * mView * mWorld * translate * scale * rotateZ * rotateY * rotateX *vec4(vertPosition, 1.0);
+    //gl_Position = mProj * mView * mWorld *vec4(vertPosition, 1.0);
     
 
     vec4 pos =  mView * mWorld * vec4(vertPosition, 1.0);
     fPosition = pos.xyz / pos.w;
-    
 }

@@ -1,9 +1,9 @@
 precision mediump float;
 
 attribute vec3 vertPosition;
-attribute vec3 vertNormal;
 attribute vec2 vertTexCoord;
 varying vec2 fragTexCoord;
+attribute vec3 vertNormal;
 varying vec3 fragNormal;
 
 uniform mat4 translate;
@@ -19,7 +19,6 @@ uniform mat4 mProj;
 
 void main()
 {
-    fragNormal = vertNormal;
     fragTexCoord = vertTexCoord;
     gl_Position = mProj * mView * mWorld * translate * scale * rotateZ * rotateY * rotateX *vec4(vertPosition, 1.0);
 }

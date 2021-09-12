@@ -126,7 +126,6 @@ class Skybox{
         //gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
         this.texture = texture;
-
     }
     draw(){
         let gl =getGlContext();
@@ -143,7 +142,7 @@ class Skybox{
         );
         gl.enableVertexAttribArray(positionAttribLocation);
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture);
-		gl.drawArrays(gl.TRIANGLES, 0, this.verts.length*200);
+		gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/3);
 		gl.disableVertexAttribArray(positionAttribLocation);
 		gl.bindBuffer(gl.ARRAY_BUFFER, null);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
@@ -153,7 +152,8 @@ class Skybox{
 
 
 class Object{
-    constructor(gl,verts,vertShaderLoc,fragShaderLoc,isTextured,textureLoc=[]){
+    constructor(name,gl,verts,isReflectiv,vertShaderLoc,fragShaderLoc,isTextured,textureLoc=[],isAnimated=false){
+        this.name = name;
         this.verts = verts;
         this.buffer = null;
         this.createBuffer();
@@ -165,12 +165,24 @@ class Object{
         this.isTextured = isTextured;
         this.textures = [];
         this.textureLoc = textureLoc;
-        if(this.isTextured){this.createTextures();}
         this.translate = getTranslateMatrix([0,0,0]);
         this.scale = getScaleMatrix([1,1,1]);
         this.rotateX = getRotateXMatrix(0);
         this.rotateY = getRotateYMatrix(0);
         this.rotateZ = getRotateZMatrix(0);
+        this.textureSampleLoc = [];
+        this.multipleTexture = false;
+        this.isAnimated = isAnimated;
+        this.isReflectiv = isReflectiv;
+        if(this.isTextured && !this.isReflectiv){this.createTextures();}
+        //Outpout for Animations
+        this.outTranslate = null;
+        this.outScale = null;
+        this.outRotateX = null;
+        this.outRotateY = null;
+        this.outRotateZ = null;
+
+
         
 
     }
@@ -225,15 +237,12 @@ class Object{
         let gl = getGlContext();
         let activeTextureArray = [gl.TEXTURE0,gl.TEXTURE1,gl.TEXTURE2,gl.TEXTURE3,gl.TEXTURE4];
         for(let i=0;i<this.textureLoc.length;i++){
-            console.log(this.textureLoc[i])
             let texture = gl.createTexture();
-            console.log(texture)
             gl.bindTexture(gl.TEXTURE_2D, texture);
-            gl.activeTexture(activeTextureArray[i]);
-            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
             gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, document.getElementById(this.textureLoc[i]));
-            gl.generateMipmap(gl.TEXTURE_2D);
             gl.bindTexture(gl.TEXTURE_2D, null);
             this.textures.push(texture);
         }
@@ -246,89 +255,84 @@ class Object{
         gl.enable(gl.DEPTH_TEST);
         
 
-        if(!this.isTextured){
-            let positionAttribLocation = gl.getAttribLocation(this.program, 'vertPosition');
-            gl.vertexAttribPointer(
-                positionAttribLocation,
-                3,
-                gl.FLOAT,
-                gl.FALSE,
-                12 * Float32Array.BYTES_PER_ELEMENT,
-                0 * Float32Array.BYTES_PER_ELEMENT
-            );
         
-            const normalAttribLocation = gl.getAttribLocation(this.program, 'vertNormal');
-            gl.vertexAttribPointer(
-                normalAttribLocation, // Attribute location
-                3, // Number of elements per attribute
-                gl.FLOAT, // Type of elements
-                gl.FALSE,
-                12 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-                5 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
-            );
+        let positionAttribLocation = gl.getAttribLocation(this.program, 'vertPosition');
+        gl.vertexAttribPointer(
+            positionAttribLocation,
+            3,
+            gl.FLOAT,
+            gl.FALSE,
+            12 * Float32Array.BYTES_PER_ELEMENT,
+            0 * Float32Array.BYTES_PER_ELEMENT
+        );
+        
+        const textCoordAttribLocation = gl.getAttribLocation(this.program, 'vertTexCoord');
+        gl.vertexAttribPointer(
+            textCoordAttribLocation, // Attribute location
+            2, // Number of elements per attribute
+            gl.FLOAT, // Type of elements
+            gl.FALSE,
+            12 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
+            3 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
+        );
 
-            
-
-            gl.enableVertexAttribArray(positionAttribLocation);
-            gl.enableVertexAttribArray(normalAttribLocation);
-            gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/12);
-            gl.disableVertexAttribArray(positionAttribLocation);
-            gl.disableVertexAttribArray(normalAttribLocation);
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-            var translateLocation = gl.getUniformLocation(this.program, 'translate');
-            gl.uniformMatrix4fv(translateLocation,gl.FALSE,this.translate );
-            var scaleLocation = gl.getUniformLocation(this.program, 'scale');
-            gl.uniformMatrix4fv(scaleLocation,gl.FALSE,this.scale );
-            var rotateXLocation = gl.getUniformLocation(this.program, 'rotateX');
-            gl.uniformMatrix4fv(rotateXLocation,gl.FALSE,this.rotateX );
-            var rotateYLocation = gl.getUniformLocation(this.program, 'rotateY');
-            gl.uniformMatrix4fv(rotateYLocation,gl.FALSE,this.rotateY );
-            var rotateZLocation = gl.getUniformLocation(this.program, 'rotateZ');
-            gl.uniformMatrix4fv(rotateZLocation,gl.FALSE,this.rotateZ );
-
-        }
-        else{
+        const normalAttribLocation = gl.getAttribLocation(this.program, 'vertNormal');
+        gl.vertexAttribPointer(
+            normalAttribLocation, // Attribute location
+            3, // Number of elements per attribute
+            gl.FLOAT, // Type of elements
+            gl.FALSE,
+            12 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
+            5 * Float32Array.BYTES_PER_ELEMENT // Offset from the beginning of a single vertex to this attribute
+        );
+        gl.enableVertexAttribArray(positionAttribLocation);
+        gl.enableVertexAttribArray(textCoordAttribLocation);
+        gl.enableVertexAttribArray(normalAttribLocation);
+        if(this.isTextured){
             
             //Draw Object
-            var positionAtrributeLocation = gl.getAttribLocation(this.program, "vertPosition");
-            var texAttributeLocation = gl.getAttribLocation(this.program, "vertTexCoord");
-            gl.vertexAttribPointer(
-                positionAtrributeLocation, // location
-                3, //number of elem per Attributes
-                gl.FLOAT, // Type of Elem
-                gl.FALSE,
-                12 * Float32Array.BYTES_PER_ELEMENT, // size of individual Vertex
-                0 // Offset from beginning of a single vertex to this Attribute
-            );
 
-            gl.vertexAttribPointer(
-                texAttributeLocation, // location
-                2, //number of elem per Attributes
-                gl.FLOAT, // Type of Elem
-                gl.FALSE,
-                12 * Float32Array.BYTES_PER_ELEMENT, // size of individual Vertex
-                3 * Float32Array.BYTES_PER_ELEMENT // Offset from beginning of a single vertex to this Attribute
-            );
-
-            gl.enableVertexAttribArray(positionAtrributeLocation);
-            gl.enableVertexAttribArray(texAttributeLocation);
-
+           
             //bind texture loop
             let activeTextureArray = [gl.TEXTURE0,gl.TEXTURE1,gl.TEXTURE2,gl.TEXTURE3,gl.TEXTURE4];
-            for(let i=0;i < this.textures.lenght;i++){
-                gl.activeTexture(activeTextureArray[i]);
-                gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
-                
-                //const samplerUniformLocation = gl.getUniformLocation(this.program, 'sPic');
-                //gl.uniform1i(samplerUniformLocation, 0);
+            for(let i=0;i< this.textures.length;i++){
+                if(this.isReflectiv){
+                    gl.bindTexture(gl.TEXTURE_CUBE_MAP,this.textures[i]);
+
+                }
+                else{
+                    gl.activeTexture(activeTextureArray[i]);
+                    gl.bindTexture(gl.TEXTURE_2D, this.textures[i]);
+                    const samplerUniformLocation = gl.getUniformLocation(this.program, 'sPic');
+                    gl.uniform1i(samplerUniformLocation, 0);
+                }
             } 
-            gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/12);
-            gl.disableVertexAttribArray(positionAtrributeLocation);
-            gl.disableVertexAttribArray(texAttributeLocation);
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-            gl.bindTexture(gl.TEXTURE_2D, null);
-               
+            
         }
+        
+        gl.drawArrays(gl.TRIANGLES, 0, this.verts.length/12);
+        gl.disableVertexAttribArray(positionAttribLocation);
+        gl.disableVertexAttribArray(normalAttribLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, null);
+        if(this.isTextured){
+            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+            gl.bindTexture(gl.TEXTURE_2D, null); 
+        }
+    }
+    animate({translate='notset',scale='notset',...kwargs}={}){
+        if (translate!='notset'){
+            this.outTranslate = addMatrix(this.translate , translate);
+        }
+        else{
+            this.outTranslate = this.translate;
+        }
+
+        if (scale!='notset'){
+            this.outTranslate = addMatrix(this.scale , scale);
+        }
+        else{
+            this.outScale = this.scale;
+        }
+         
     }
 }
