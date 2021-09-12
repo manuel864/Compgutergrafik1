@@ -9,7 +9,6 @@ struct Light {
 
 
 struct Material {
-    bool useVertColor;
     vec4 color;
     float shininess;
     float spec;
@@ -18,24 +17,71 @@ struct Material {
 uniform Light pointLight1;
 uniform Light pointLight2;
 uniform Material mat;
+varying vec3 fragNormal;
+varying vec3 fPosition;
 
 uniform vec3 eyePosition;
+
+varying vec2 fragTexCoord;
+uniform sampler2D sGrain;
+uniform sampler2D sJupiter;
+
+//varying vec3 v_surfaceToPointLight [numberOfLights];
 
 varying float fogDepth;
 uniform vec4 fogColor;
 uniform float fogNear;
 uniform float fogFar;
 
-varying vec2 fragTexCoord;
-varying vec3 fragNormal;
-uniform sampler2D sGrain;
-uniform sampler2D sJupiter;
+//varying vec3 v_surfaceToView;
+//varying vec3 fragColor;
 void main()
 {
+    
     vec4 jupiter = texture2D(sJupiter, fragTexCoord);
     vec4 grain = texture2D(sGrain, fragTexCoord);
-    vec4 overlay = grain * 0.75;
-    vec4 color = vec4((jupiter*overlay).rgb,1.0);
+    vec4 overlay = grain;
+    vec4 color =  jupiter*grain;
+    gl_FragColor = color;
+    vec3 normal = normalize(fragNormal);
+    vec3 v_surfaceToView = normalize(eyePosition - fPosition);
+    vec3 finalLightColor = mat.ambient;
+    vec3 finalSpecColor = vec3(0.0,0.0,0.0);
+    /////////Erste Lampe
+    float specular = 0.0;
+    float light = 0.0;
+    vec3 v_surfaceToPointLight = normalize(pointLight1.position - fPosition); //L Vektor: Direction  
+    vec3 halfVector = normalize(v_surfaceToPointLight + v_surfaceToView);
+    light=dot(v_surfaceToPointLight, normal); 
+    if (light > 0.0) {
+        specular = pow(dot(normal, halfVector), 300.0);
+    }
+    float lightStrenght =  (pow(max(dot(reflect(-v_surfaceToPointLight, normal), vec3(0.0,0.0,1.0)), 0.0), mat.shininess));
+    finalLightColor += (color.rgb*(light * pointLight1.lightColor));
+    finalSpecColor +=  mat.spec*lightStrenght * pointLight1.specColor;
+
+    ////////////////////Zweite Lampe
+    specular = 0.0;
+    light = 0.0;
+    v_surfaceToPointLight = normalize(pointLight2.position - fPosition); //L Vektor: Direction  
+    halfVector = normalize(v_surfaceToPointLight + v_surfaceToView);
+    light=dot(v_surfaceToPointLight, normal); 
+    if (light > 0.0) {
+        specular = pow(dot(normal, halfVector), 300.0);
+    }
+    lightStrenght =  0.1 * pow(max(dot(reflect(-v_surfaceToPointLight, normal), vec3(0.0,0.0,1.0)), 0.0), mat.shininess);
+    finalLightColor += (color.rgb*(light * pointLight2.lightColor));
+    finalSpecColor +=  mat.spec*lightStrenght * pointLight2.specColor;
+
+
+    
+
+
+
+
     float fogAmount = smoothstep(fogNear, fogFar, fogDepth);
-    gl_FragColor = mix(color, fogColor, fogAmount);
+    vec4 lightColor = vec4(finalLightColor,color.a);
+    vec4 mixColor = lightColor + color;
+    gl_FragColor = mix(mixColor, fogColor, fogAmount);
+    gl_FragColor.rgb += finalSpecColor;
 }

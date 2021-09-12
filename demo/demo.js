@@ -5,7 +5,7 @@ async function init(){
     let baseFog = new Fog([0.85, 0.85, 0.85,1.0], 1.0, 20.0);
 
      //                     useVertexColor    BaseColor        shini    spec      ambient
-    let baseMaterial= new Material(false,[0.2, 0.4, 0.65, 1.0], 30.0,  1.0,  [0.05,0.05,0.2]);
+    let baseMaterial= new Material(false,[0.2, 0.4, 0.65, 1.0], 30.0,  0.2,  [0.05,0.05,0.2]);
     let glassMaterial = new Material(true,[0,0,0],300,1,[0,0,0]);
 
     let skyboxGeo = createSkyBox();
@@ -164,7 +164,7 @@ async function init(){
                 gl.uniformMatrix4fv(scaleLocation,gl.FALSE, obj.outScale);}
 
 
-                //Nebel
+                
                 //Nebel
                 const fogColorUniformLocation = gl.getUniformLocation(obj.program, 'fogColor');
                 gl.uniform4fv(fogColorUniformLocation, obj.fog.fogColor);
