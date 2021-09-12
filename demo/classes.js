@@ -174,7 +174,7 @@ class Object{
         this.textures = [];
         this.textureLoc = textureLoc;
         this.isFog = isFog;
-        this.fog = null
+        this.fog = null;
         this.translate = getTranslateMatrix([0,0,0]);
         this.scale = getScaleMatrix([1,1,1]);
         this.rotateX = getRotateXMatrix(0);
