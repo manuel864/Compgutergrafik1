@@ -12,6 +12,7 @@ uniform mat4 rotateX;
 uniform mat4 rotateY;
 uniform mat4 rotateZ;
 
+varying float fogDepth;
 
 uniform mat4 mWorld;
 uniform mat4 mView;
@@ -21,5 +22,8 @@ void main()
 {
     fragNormal = vertNormal;
     fragTexCoord = vertTexCoord;
+    vec4 vPos = mView * mWorld * vec4(vertPosition, 1.0);
+    fogDepth = length(vPos.xyz);
     gl_Position = mProj * mView * mWorld * translate * scale * rotateZ * rotateY * rotateX *vec4(vertPosition, 1.0);
+    gl_Position = mProj * vPos;
 }

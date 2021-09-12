@@ -29,6 +29,15 @@ class Light{
     this.specColor = specColor; //vec3
     }
 }
+
+class Fog{
+    constructor(fogColor, fogNear, fogFar){
+    this.fogColor = fogColor; //vec3
+    this.fogNear = fogNear; //float
+    this.forFar = fogFar; //float
+    }
+}
+
 class Skybox{
     constructor(verts,vertShaderLoc,fragShaderLoc,textureLoc){
         this.verts = verts;
@@ -152,7 +161,7 @@ class Skybox{
 
 
 class Object{
-    constructor(name,gl,verts,isReflectiv,vertShaderLoc,fragShaderLoc,isTextured,textureLoc=[],isAnimated=false){
+    constructor(name,gl,verts,isReflectiv,vertShaderLoc,fragShaderLoc,isTextured,textureLoc=[],isAnimated=false, isFog=false){
         this.name = name;
         this.verts = verts;
         this.buffer = null;
@@ -172,6 +181,8 @@ class Object{
         this.rotateZ = getRotateZMatrix(0);
         this.textureSampleLoc = [];
         this.isAnimated = isAnimated;
+        this.isFog = isFog;
+        this.fog = null;
         this.isReflectiv = isReflectiv;
         if(this.isTextured && !this.isReflectiv){this.createTextures();}
         //Outpout for Animations

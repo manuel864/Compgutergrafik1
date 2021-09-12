@@ -4,6 +4,9 @@ async function init(){
 
      //                                BaseColor        shini    spec      ambient
     let baseMaterial= new Material([0.2, 0.4, 0.65, 1.0], 30.0,  1.0,  [0.05,0.05,0.2]);
+    //                        fc               FN  FF
+    let baseFog = new Fog([0.85, 0.85, 0.85], 1, 8);
+
 
     let skyboxGeo = createSkyBox();
     let skyboxImages = ["back-jpg","front-jpg","top-jpg","bottom-jpg","left-jpg","right-jpg"];
@@ -22,9 +25,10 @@ async function init(){
     monkey2.material = baseMaterial;
 
     let dataBild = getPaintVerts();
-    let bild = new Object("bild",gl,dataBild,false,'shaders/canvas_vert.glsl','shaders/canvas_frag.glsl',true,['mona-png']);
+    let bild = new Object("bild",gl,dataBild,false,'shaders/canvas_vert.glsl','shaders/canvas_frag.glsl',true,['mona-png'],false, true);
     await bild.createProgram(gl);
     bild.material = baseMaterial;
+    bild.fog = baseFog;
     
     let globusData = await fetchModel('objects/earth.obj');
     let globus = new Object("globus",gl, globusData,false,'shaders/planet_vert.glsl','shaders/planet_frag.glsl',true,['jupiter-png','grain-png']);
@@ -59,6 +63,7 @@ async function init(){
     monkey2.translate = getTranslateMatrix([2,0,0])
     globus.translate = getTranslateMatrix([0,2,0])
     tv.translate = getTranslateMatrix([2,0,0]);
+
 
 
     //                                Pos               Color         Spec Color       
@@ -98,7 +103,20 @@ async function init(){
             var viewWorldPositionLocation = gl.getUniformLocation(obj.program, "eyePosition");
             gl.uniform3fv(viewWorldPositionLocation, [0, 0, 8]);
         
-        
+            if(obj.isFog == true){
+                gl.clearColor(obj.fog.fogColor[0], obj.fog.fogColor[1], obj.fog.fogColor[2], 1.0);
+
+                const fogColorUniformLocation = gl.getUniformLocation(obj.program, 'fogColor');
+                gl.uniform3fv(fogColorUniformLocation, [0.85, 0.85, 0.85]);
+            
+                const fogNearUniformLocation = gl.getUniformLocation(obj.program, "fogNear");
+                gl.uniform1f(fogNearUniformLocation, 4);
+            
+                const fogFarUniformLocation = gl.getUniformLocation(obj.program, "fogFar");
+                gl.uniform1f(fogFarUniformLocation, 18);
+            }
+
+
             if(obj.isReflectiv){
                 var viewWorldPositionLocation = gl.getUniformLocation(obj.program, "eyePosition");
                 gl.uniform3fv(viewWorldPositionLocation, [0, 0, 8]);
@@ -113,7 +131,7 @@ async function init(){
         }
     }
     let angle = 360;
-    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.clearColor(baseFog.fogColor[0], baseFog.fogColor[1], baseFog.fogColor[2], 1.0);
     let translate = 10;
     var loop = function(){
         angle = performance.now()/1000/12*360;
