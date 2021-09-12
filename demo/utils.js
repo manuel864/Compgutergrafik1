@@ -12,6 +12,21 @@ function getGlContext(){
     return gl;
 }
 
+function cameraWerte(){
+	const xAchse = document.querySelector('#cameraTransX').value;
+	document.querySelector('#cameraTransXValue').innerHTML = xAchse;
+	const yAchse = document.querySelector('#cameraTransY').value;
+	document.querySelector('#cameraTransYValue').innerHTML = yAchse;
+	const zAchse = document.querySelector('#cameraTransZ').value;
+	document.querySelector('#cameraTransZValue').innerHTML = zAchse;
+
+	return {
+		x: xAchse, 
+		y: yAchse, 
+		z: zAchse
+	}
+}
+
 async function fetchModel(name) {
 
 	let response = await fetch(name);

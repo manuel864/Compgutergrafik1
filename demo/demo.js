@@ -169,7 +169,9 @@ async function init(){
             var worldMatrix =getEinheitsMatrix4();
             var viewMatrix = getEinheitsMatrix4();
             var projMatrix = getEinheitsMatrix4();
-            viewMatrix = look(viewMatrix, [0, 0, 8], [0, 0, 0], [0, 1, 0]);
+
+            var achse = cameraWerte();
+            viewMatrix = look(viewMatrix, [achse.x, achse.y, achse.z], [0, 0, 0], [0, 1, 0]);
             projMatrix=perspective(projMatrix,45,canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0);
             gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
             gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
