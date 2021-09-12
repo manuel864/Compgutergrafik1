@@ -1,5 +1,4 @@
 precision mediump float;
-
 struct Light {
     vec3 position;
     vec3 lightColor;
@@ -26,11 +25,10 @@ uniform vec4 fogColor;
 uniform float fogNear;
 uniform float fogFar;
 
-varying vec4 fragColor;
 varying vec2 fragTexCoord;
 varying vec3 fragNormal;
-uniform sampler2D sPic;
+varying vec4 fragColor;
 void main()
 {
-    gl_FragColor = texture2D(sPic, fragTexCoord);
+    gl_FragColor = fragColor;
 }

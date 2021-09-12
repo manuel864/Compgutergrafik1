@@ -1,13 +1,12 @@
 async function init(){
     let gl =getGlContext();
     let scene = new Scene();
-
-     //                                BaseColor        shini    spec      ambient
-    let baseMaterial= new Material([0.2, 0.4, 0.65, 1.0], 30.0,  1.0,  [0.05,0.05,0.2]);
-
     //                            FC           FN  FF
-    let baseFog = new Fog([0.85, 0.85, 0.85], 1.0, 10.0);
+    let baseFog = new Fog([0.85, 0.85, 0.85,1.0], 1.0, 20.0);
 
+     //                     useVertexColor    BaseColor        shini    spec      ambient
+    let baseMaterial= new Material(false,[0.2, 0.4, 0.65, 1.0], 30.0,  1.0,  [0.05,0.05,0.2]);
+    let glassMaterial = new Material(true,[0,0,0],300,1,[0,0,0]);
 
     let skyboxGeo = createSkyBox();
     let skyboxImages = ["back-jpg","front-jpg","top-jpg","bottom-jpg","left-jpg","right-jpg"];
@@ -15,26 +14,26 @@ async function init(){
     await skybox.createProgram(); 
     
     let monkeyData = await fetchModel('objects/monkey.obj');
-    //                    Name| gl | vertsData | isreflect |                               shader programme                 | isTextured  |  textureLocs als Array 
-    let monkey = new Object("1", gl ,monkeyData, false    ,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',false);
+    //                    Name| gl | vertsData  | isreflect |                               shader programme                           | isFog | isTextured  |  textureLocs als Array 
+    let monkey = new Object("1", gl ,monkeyData ,     false    ,'shaders/phongVertsShaderText.glsl','shaders/phongFragShaderText.glsl',    true,       false);
     await monkey.createProgram(gl);
     monkey.material = baseMaterial;
     monkey.fog = baseFog;
     
 
-    let monkey2 = new Object("2",gl,monkeyData,true,'shaders/reflection_vert.glsl','shaders/reflection_frag.glsl',true,[skybox.texture]);
+    let monkey2 = new Object("2",gl,monkeyData,true,'shaders/reflection_vert.glsl','shaders/reflection_frag.glsl',true,true,[skybox.texture]);
     await monkey2.createProgram(gl);
     monkey2.material = baseMaterial;
     monkey2.fog = baseFog;
 
     let dataBild = getPaintVerts();
-    let bild = new Object("bild",gl,dataBild,false,'shaders/canvas_vert.glsl','shaders/canvas_frag.glsl',true,['mona-png'],false, true);
+    let bild = new Object("bild",gl,dataBild,false,'shaders/canvas_vert.glsl','shaders/canvas_frag.glsl',true,true,['mona-png']);
     await bild.createProgram(gl);
     bild.material = baseMaterial;
     bild.fog = baseFog;
     
     let globusData = await fetchModel('objects/earth.obj');
-    let globus = new Object("globus",gl, globusData,false,'shaders/planet_vert.glsl','shaders/planet_frag.glsl',true,['jupiter-png','grain-png']);
+    let globus = new Object("globus",gl, globusData,false,'shaders/planet_vert.glsl','shaders/planet_frag.glsl',true,true,['jupiter-png','grain-png']);
     await globus.createProgram(gl);
     globus.textureSampleLoc = ['sJupiter','sGrain']
     globus.multipleTexture = true;
@@ -42,12 +41,16 @@ async function init(){
     globus.fog = baseFog;
 
     let tvData = getTV();
-    let tv = new Object("tv",gl,tvData,false,'shaders/tv_vert.glsl','shaders/tv_frag.glsl',true,['video-texture'],true);
+    let tv = new Object("tv",gl,tvData,false,'shaders/tv_vert.glsl','shaders/tv_frag.glsl',true,true,['video-texture'],true);
     await tv.createProgram(gl);
     tv.material = baseMaterial;
     tv.fog = baseFog;
-    
-    
+
+    let glassPodestData = getGlassPodest();
+    let glassPodest = new Object("glass",gl,glassPodestData,false,'shaders/glassBoxes_vert.glsl','shaders/glassBoxes_frag.glsl',true,false);
+    await glassPodest.createProgram(gl);
+    glassPodest.material = glassMaterial;
+    glassPodest.fog = baseFog;
     
     
     
@@ -57,6 +60,7 @@ async function init(){
     scene.addObject(monkey2)
     scene.addObject(globus);
     scene.addObject(tv);
+    scene.addObject(glassPodest)
     
 
 
@@ -68,7 +72,6 @@ async function init(){
     monkey2.translate = getTranslateMatrix([2,0,0])
     globus.translate = getTranslateMatrix([0,2,0])
     tv.translate = getTranslateMatrix([2,0,0]);
-
 
 
     //                                Pos               Color         Spec Color       
@@ -85,6 +88,8 @@ async function init(){
             var specLocation = gl.getUniformLocation(obj.program, 'mat.spec')
             var shininessLocation = gl.getUniformLocation(obj.program, 'mat.shininess');
             var ambientLocation = gl.getUniformLocation(obj.program, 'mat.ambient');
+            var useVertColorLocation = gl.getUniformLocation(obj.program,'useVertColor');
+            gl.uniform1i(useVertColorLocation,obj.material.useVertexColor);
             gl.uniform4fv(baseColorLocation, obj.material.baseColor );
             gl.uniform1f(specLocation, obj.material.spec);
             gl.uniform1f(shininessLocation, obj.material.shininess);
@@ -108,16 +113,7 @@ async function init(){
             var viewWorldPositionLocation = gl.getUniformLocation(obj.program, "eyePosition");
             gl.uniform3fv(viewWorldPositionLocation, [0, 0, 8]);
         
-            //Nebel
-            const fogColorUniformLocation = gl.getUniformLocation(obj.program, 'fogColor');
-            gl.uniform3fv(fogColorUniformLocation, obj.fog.fogColor);
-            const fogNearUniformLocation = gl.getUniformLocation(obj.program, 'fogNear');
-            gl.uniform1f(fogNearUniformLocation, obj.fog.fogNear);
-            const fogFarUniformLocation = gl.getUniformLocation(obj.program, 'fogFar');
-            gl.uniform1f(fogFarUniformLocation, obj.fog.fogFar);
-
-
-
+        
             if(obj.isReflectiv){
                 var viewWorldPositionLocation = gl.getUniformLocation(obj.program, "eyePosition");
                 gl.uniform3fv(viewWorldPositionLocation, [0, 0, 8]);
@@ -132,7 +128,11 @@ async function init(){
         }
     }
     let angle = 360;
-    gl.clearColor(baseFog.fogColor[0], baseFog.fogColor[1], baseFog.fogColor[2], 1.0);
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.blendEquation(gl.FUNC_ADD, gl.FUNC_ADD);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    gl.depthMask(true);
+    gl.enable(gl.BLEND);
     let translate = 10;
     var loop = function(){
         angle = performance.now()/1000/12*360;
@@ -141,6 +141,7 @@ async function init(){
 
         for(var obj of scene.objects){
             gl.useProgram(obj.program);
+            
             if(obj instanceof Object){
 
                 var translateLocation = gl.getUniformLocation(obj.program, 'translate');
@@ -162,6 +163,16 @@ async function init(){
                 var scaleLocation = gl.getUniformLocation(obj.program, 'scale');
                 gl.uniformMatrix4fv(scaleLocation,gl.FALSE, obj.outScale);}
 
+
+                //Nebel
+                //Nebel
+                const fogColorUniformLocation = gl.getUniformLocation(obj.program, 'fogColor');
+                gl.uniform4fv(fogColorUniformLocation, obj.fog.fogColor);
+                const fogNearUniformLocation = gl.getUniformLocation(obj.program, 'fogNear');
+                gl.uniform1f(fogNearUniformLocation, obj.fog.fogNear);
+                const fogFarUniformLocation = gl.getUniformLocation(obj.program, 'fogFar');
+                gl.uniform1f(fogFarUniformLocation, obj.fog.fogFar);
+
             }
             var matWorldUniformLocation = gl.getUniformLocation(obj.program, 'mWorld');
             var matViewUniformLocation = gl.getUniformLocation(obj.program, 'mView');
@@ -169,14 +180,16 @@ async function init(){
             var worldMatrix =getEinheitsMatrix4();
             var viewMatrix = getEinheitsMatrix4();
             var projMatrix = getEinheitsMatrix4();
+            // viewMatrix = look(viewMatrix, [0, 0, 8], [0, 0, 0], [0, 1, 0]);
+            // projMatrix=perspective(projMatrix,45,canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0);
+            // gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
+            // gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
 
             var achse = cameraWerte();
             viewMatrix = look(viewMatrix, [achse.x, achse.y, achse.z], [0, 0, 0], [0, 1, 0]);
             projMatrix=perspective(projMatrix,45,canvas.clientWidth / canvas.clientHeight, 0.1, 1000.0);
             gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
             gl.uniformMatrix4fv(matProjUniformLocation, gl.FALSE, projMatrix);
-
-            
 
             worldMatrix = getEinheitsMatrix4();
             worldMatrix = rotate(worldMatrix,angle, [0, 1, 0]);

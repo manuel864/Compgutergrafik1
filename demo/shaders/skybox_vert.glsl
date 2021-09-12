@@ -9,6 +9,7 @@ varying vec3 fTexCoord;
 
 void main()
 {
+  
   fTexCoord = vertPosition;
   vec4 viewPos = mView * mWorld * vec4(vertPosition, 0.0);
   viewPos.w = 1.0;
