@@ -10,6 +10,7 @@ struct Light {
 
 
 struct Material {
+    bool useVertColor;
     vec4 color;
     float shininess;
     float spec;
@@ -33,9 +34,13 @@ uniform vec3 eyePosition;
 
 varying vec3 fragNormal;
 varying vec2 fTexCoord;
-
+varying vec4 fragColor;
 uniform samplerCube skybox;
 
+varying float fogDepth;
+uniform vec4 fogColor;
+uniform float fogNear;
+uniform float fogFar;
 
 void main(){
     vec3 normalizeEye = normalize(eyePosition);

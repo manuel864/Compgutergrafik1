@@ -9,6 +9,7 @@ struct Light {
 
 
 struct Material {
+    bool useVertColor;
     vec4 color;
     float shininess;
     float spec;
@@ -19,6 +20,7 @@ uniform Light pointLight2;
 uniform Material mat;
 varying vec3 fragNormal;
 varying vec3 fPosition;
+varying vec4 fragColor;
 
 //varying vec3 v_surfaceToPointLight [numberOfLights];
 
@@ -26,7 +28,6 @@ varying float fogDepth;
 uniform vec4 fogColor;
 uniform float fogNear;
 uniform float fogFar;
-
 
 uniform vec3 eyePosition;
 
@@ -66,6 +67,9 @@ void main(){
     lightStrenght =  pow(max(dot(reflect(-v_surfaceToPointLight, normal), vec3(0.0,0.0,1.0)), 0.0), mat.shininess);
     finalLightColor += mat.color.rgb*(light * pointLight2.lightColor);
     finalSpecColor +=  mat.spec*lightStrenght * pointLight2.specColor;
+
+
+
 
     float fogAmount = smoothstep(fogNear, fogFar, fogDepth);
 

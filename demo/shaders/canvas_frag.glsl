@@ -9,6 +9,7 @@ struct Light {
 
 
 struct Material {
+    bool useVertColor;
     vec4 color;
     float shininess;
     float spec;
@@ -20,14 +21,15 @@ uniform Material mat;
 
 uniform vec3 eyePosition;
 
-varying vec2 fragTexCoord;
-varying vec3 fragNormal;
-uniform sampler2D sPic;
-
 varying float fogDepth;
 uniform vec4 fogColor;
 uniform float fogNear;
 uniform float fogFar;
+
+varying vec2 fragTexCoord;
+varying vec3 fragNormal;
+varying vec4 fragColor;
+uniform sampler2D sPic;
 void main()
 {
     vec4 color = texture2D(sPic, fragTexCoord);
